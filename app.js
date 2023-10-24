@@ -1,7 +1,7 @@
 const express = require('express'); //returns a function and we store in express
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const Blog = require('./models/blog')
+const blogRoutes = require('./routes/blogRoutes');
 
 //express app
 const app = express(); //invoking express function to create an instancce of an Express at which we're storing in this constant
@@ -20,6 +20,7 @@ app.set('view engine' , 'ejs');
 
 // middleware and static files
 app.use(express.static('public'));
+app.use(express.urlencoded({extended: true})); // takes all url encoded data and passes it into an object we can use n the request object
 app.use(morgan('dev'));
 
 // mongoose and mongo sandbox routes
@@ -70,20 +71,9 @@ app.get('/about', (req, res) => {
     res.render('about' , {title : 'About'});
 });
 
-// blog routes
-app.get('/blogs', (req, res) => {
-    Blog.find().sort({createdAt : -1})  //descending order
-        .then((result) => {
-            res.render('index', {title: 'All Blogs', blogs : result})
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-})
+//blog routes
+app.use('/blogs' , blogRoutes);
 
-app.get('/blogs/create' , (req, res) => {
-    res.render('create' , {title : 'Create a new blog'});
-})
 // 404 page
 app.use((req , res) => {
     res.status(404).render('404', {title : '404'});
